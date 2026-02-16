@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Assignment 4 - Voxel World</title>
+    <style>
+      html, body {
+        margin: 0;
+        height: 100%;
+        background: #111;
+        color: #ddd;
+        font-family: system-ui, -apple-system, Arial;
+      }
+
+      #wrap {
+        display: grid;
+        grid-template-columns: 1fr;
+        height: 100%;
+      }
+
+      #hud {
+        position: fixed;
+        left: 12px;
+        top: 12px;
+        width: 360px;
+        max-width: calc(100vw - 24px);
+        background: rgba(0,0,0,0.55);
+        padding: 12px 14px;
+        border-radius: 12px;
+        line-height: 1.35;
+        user-select: none;
+        pointer-events: none; /* IMPORTANT: don’t block canvas clicks */
+      }
+
+      /* Center screen game feedback (rats caught / YOU WIN) */
+      #centerHud {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        font-family: monospace;
+        font-size: 56px;
+        color: white;
+        text-shadow: 0 0 10px black;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        user-select: none;
+      }
+
+      .title {
+        font-size: 20px;
+        font-weight: 800;
+        margin-bottom: 6px;
+      }
+
+      .small {
+        opacity: 0.9;
+        font-size: 12px;
+      }
+
+      .howto {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid rgba(255,255,255,0.15);
+      }
+
+      .howto b {
+        display: inline-block;
+        margin-bottom: 4px;
+      }
+
+      canvas {
+        width: 100vw;
+        height: 100vh;
+        display: block;
+      }
+
+      kbd {
+        background: #222;
+        padding: 1px 6px;
+        border-radius: 6px;
+        border: 1px solid #444;
+        margin-right: 2px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="wrap">
+      <canvas id="webgl" tabindex="0"></canvas>
+
+      <!-- Center pop-up text (🐀 X/Y, YOU WIN!) -->
+      <div id="centerHud"></div>
+
+      <div id="hud">
+        <div class="title">Lauren's Virtual World</div>
+
+        <div class="small">
+          Move: <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> &nbsp; Turn: <kbd>Q</kbd> <kbd>E</kbd><br/>
+          Mouse look: <kbd>Left Click</kbd> to lock &nbsp; <kbd>Esc</kbd> to release<br/>
+          Edit: <kbd>R</kbd> = add block, <kbd>F</kbd> = delete block<br/>
+          <span id="perf">fps=0</span>
+        </div>
+
+        <div class="small howto">
+          <b>How to play (Catch the Rats):</b><br/>
+          1) Walk around the world and find the rats.<br/>
+          2) Get close to a rat to catch it (it will disappear).<br/>
+          3) Catch all 15 rats to win. You’ll see <i>YOU WIN!</i> on the screen.<br/>
+        </div>
+      </div>
+    </div>
+
+    <script src="./lib/cuon-matrix-cse160.js"></script>
+    <script type="module" src="./index.js"></script>
+  </body>
+</html>
