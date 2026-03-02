@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Assignment 4: Lighting</title>
+    <style>
+      html, body {
+        margin: 0;
+        height: 100%;
+        background: #111;
+        color: #ddd;
+        font-family: system-ui, -apple-system, Arial;
+      }
+
+      #wrap {
+        display: grid;
+        grid-template-columns: 1fr;
+        height: 100%;
+      }
+
+      #hud {
+        position: fixed;
+        left: 12px;
+        top: 12px;
+        width: 380px;
+        max-width: calc(100vw - 24px);
+        background: rgba(0,0,0,0.55);
+        padding: 12px 14px;
+        border-radius: 12px;
+        line-height: 1.35;
+        user-select: none;
+        pointer-events: none;
+      }
+
+      #controls {
+        position: fixed;
+        right: 12px;
+        top: 12px;
+        width: 320px;
+        max-width: calc(100vw - 24px);
+        background: rgba(0,0,0,0.55);
+        padding: 12px 14px;
+        border-radius: 12px;
+        line-height: 1.35;
+        user-select: none;
+        pointer-events: auto;
+      }
+
+      .title {
+        font-size: 20px;
+        font-weight: 800;
+        margin-bottom: 6px;
+      }
+
+      .small {
+        opacity: 0.9;
+        font-size: 12px;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 80px;
+        gap: 10px;
+        align-items: center;
+        margin: 8px 0;
+      }
+
+      label { font-size: 12px; opacity: 0.9; }
+      input[type="range"] { width: 100%; }
+
+      .toggles {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 10px;
+      }
+
+      .btn {
+        background: #222;
+        border: 1px solid #444;
+        color: #ddd;
+        padding: 8px 10px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+      .btn:hover { background: #2a2a2a; }
+
+      canvas {
+        width: 100vw;
+        height: 100vh;
+        display: block;
+      }
+
+      kbd {
+        background: #222;
+        padding: 1px 6px;
+        border-radius: 6px;
+        border: 1px solid #444;
+        margin-right: 2px;
+      }
+
+      /* Center screen game feedback (rats caught / YOU WIN) */
+      #centerHud {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        font-family: monospace;
+        font-size: 56px;
+        color: white;
+        text-shadow: 0 0 10px black;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        user-select: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="wrap">
+      <canvas id="webgl" tabindex="0"></canvas>
+
+      <div id="centerHud"></div>
+
+      <div id="hud">
+        <div class="title">Assignment 4: Lighting</div>
+
+        <div class="small">
+          Move: <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> &nbsp; Turn: <kbd>Q</kbd> <kbd>E</kbd><br/>
+          Mouse look: <kbd>Left Click</kbd> to lock &nbsp; <kbd>Esc</kbd> to release<br/>
+          Edit: <kbd>R</kbd> = add block, <kbd>F</kbd> = delete block<br/>
+          <span id="perf">fps=0</span>
+        </div>
+      </div>
+
+      <div id="controls">
+        <div class="title" style="font-size:16px;">Lighting Controls</div>
+
+        <div class="row">
+          <label>Light X</label>
+          <input id="lightX" type="range" min="-20" max="60" step="0.1" value="20" />
+        </div>
+        <div class="row">
+          <label>Light Y</label>
+          <input id="lightY" type="range" min="-2" max="30" step="0.1" value="8" />
+        </div>
+        <div class="row">
+          <label>Light Z</label>
+          <input id="lightZ" type="range" min="-20" max="60" step="0.1" value="20" />
+        </div>
+
+        <div class="row">
+          <label>Light R</label>
+          <input id="lightR" type="range" min="0" max="1" step="0.01" value="1" />
+        </div>
+        <div class="row">
+          <label>Light G</label>
+          <input id="lightG" type="range" min="0" max="1" step="0.01" value="1" />
+        </div>
+        <div class="row">
+          <label>Light B</label>
+          <input id="lightB" type="range" min="0" max="1" step="0.01" value="1" />
+        </div>
+
+        <div class="toggles">
+          <button class="btn" id="toggleLighting">Lighting: ON</button>
+          <button class="btn" id="toggleNormals">Normals: OFF</button>
+          <button class="btn" id="toggleSpot">Spotlight: OFF</button>
+          <button class="btn" id="toggleSpin">Spin Light: OFF</button>
+        </div>
+
+        <div class="small" style="margin-top:10px;">
+          Spotlight points where the camera looks (flashlight-style).
+        </div>
+      </div>
+    </div>
+
+    <script src="./lib/cuon-matrix-cse160.js"></script>
+    <script type="module" src="./index.js"></script>
+  </body>
+</html>
