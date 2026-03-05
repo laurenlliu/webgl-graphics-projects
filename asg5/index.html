@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Floating Space World</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; }
+    canvas { display: block; }
+
+    #ui {
+      position: fixed;
+      top: 16px; left: 16px;
+      color: #fff;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-size: 13px;
+      line-height: 1.8;
+      z-index: 10;
+      width: 280px;
+    }
+    #ui h2 { font-size: 15px; font-weight: 700; margin-bottom: 6px; color: #7df9ff; }
+
+    #wow-toggle {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #ffd700;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      user-select: none;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255,255,255,0.12);
+    }
+    #wow-toggle:hover { opacity: 0.85; }
+    #wow-details {
+      font-size: 11px;
+      line-height: 1.65;
+      color: #ddd;
+      margin-top: 6px;
+      display: none;
+    }
+    #wow-details b { color: #ffd700; }
+
+    /* Light controls panel */
+    #light-controls {
+      position: fixed;
+      top: 16px; right: 16px;
+      color: #fff;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-size: 12px;
+      z-index: 10;
+      width: 220px;
+    }
+    #light-controls h3 {
+      font-size: 13px;
+      font-weight: 700;
+      color: #ffd700;
+      margin-bottom: 10px;
+    }
+    .slider-row {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 10px;
+    }
+    .slider-row label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 3px;
+      color: #ccc;
+    }
+    .slider-row label span { color: #7df9ff; }
+    .slider-row input[type=range] {
+      width: 100%;
+      accent-color: #7df9ff;
+      cursor: pointer;
+    }
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .ctrl-btn {
+      flex: 1;
+      padding: 6px 0;
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      font-size: 11px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .ctrl-btn:hover { background: rgba(255,255,255,0.18); }
+    .ctrl-btn.active { background: rgba(125,249,255,0.25); border-color: #7df9ff; color: #7df9ff; }
+
+    #loading {
+      position: fixed; inset: 0;
+      background: #000;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      color: #fff; font-size: 18px; z-index: 999;
+      transition: opacity 0.8s;
+    }
+    #loading .bar-wrap {
+      width: 260px; height: 6px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 3px; margin-top: 18px; overflow: hidden;
+    }
+    #loading .bar {
+      height: 100%; width: 0%;
+      background: #7df9ff;
+      border-radius: 3px;
+      transition: width 0.3s;
+    }
+    #loading.hidden { opacity: 0; pointer-events: none; }
+  </style>
+</head>
+<body>
+
+  <div id="loading">
+    <div>Loading Scene…</div>
+    <div class="bar-wrap"><div class="bar" id="progbar"></div></div>
+  </div>
+
+  <div id="ui">
+    <h2>🌍 Floating Space World 🌍</h2>
+    <div>Left-drag: orbit &nbsp;|&nbsp; Right-drag: pan</div>
+    <div>Scroll: zoom</div>
+    <div>WASD: fly &nbsp;|&nbsp; E/Q: up/down</div>
+    <div id="wow-toggle" onclick="toggleWow()">
+      WOW Features <span id="wow-arrow">▼</span>
+    </div>
+    <div id="wow-details">
+      <b>1. Day/Night Cycle</b>: Custom GLSL sky shader with sun, stars, moon &amp; dynamic lighting.<br>
+      <b>2. Orbiting Lava Planet</b>: Glowing planet orbits the island with a travelling point light.<br>
+      <b>3. Animated Fireflies</b>: 18 glowing particles float around the island.<br>
+      <b>4. Floating Rock Physics</b>: 10 rocks bob at independent speeds and phases.<br>
+      <b>5. Energy Beams</b>: 4 animated light (adjustable) beams shoot up from the pillars.<br>
+
+    </div>
+  </div>
+
+  <!-- Light Controls Panel -->
+  <div id="light-controls">
+    <h3>Light Controls</h3>
+
+    <div class="slider-row">
+      <label>Sun Intensity <span id="sun-val">2.5</span></label>
+      <input type="range" id="sun-slider" min="0" max="5" step="0.1" value="2.5"
+        oninput="window.lightOverrides.sunMax = parseFloat(this.value); document.getElementById('sun-val').textContent = this.value;">
+    </div>
+
+    <div class="slider-row">
+      <label>Ambient <span id="amb-val">0.5</span></label>
+      <input type="range" id="amb-slider" min="0" max="2" step="0.05" value="0.5"
+        oninput="window.lightOverrides.ambientBase = parseFloat(this.value); document.getElementById('amb-val').textContent = this.value;">
+    </div>
+
+    <div class="slider-row">
+      <label>Torch Brightness <span id="torch-val">2.0</span></label>
+      <input type="range" id="torch-slider" min="0" max="8" step="0.5" value="2"
+        oninput="window.lightOverrides.torchPower = parseFloat(this.value); document.getElementById('torch-val').textContent = this.value;">
+    </div>
+
+    <div class="slider-row">
+      <label>Beam Color</label>
+      <input type="color" id="beam-color" value="#00ccff" style="width:100%;height:28px;border:none;border-radius:6px;cursor:pointer;background:none;"
+        oninput="window.lightOverrides.beamColor = this.value;">
+    </div>
+
+    <div class="btn-row">
+      <button class="ctrl-btn" id="btn-day" onclick="setTimeOfDay('day')">☀️ Day</button>
+      <button class="ctrl-btn" id="btn-night" onclick="setTimeOfDay('night')">🌙 Night</button>
+      <button class="ctrl-btn" id="btn-auto" onclick="setTimeOfDay('auto')" style="border-color:#7df9ff;color:#7df9ff;">🔄 Auto</button>
+    </div>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script>
+    // Shared light override object read by index.js
+    window.lightOverrides = {
+      sunMax:      2.5,
+      ambientBase: 0.5,
+      crystalPower: 4.0,
+      spotPower:   10.0,
+      torchPower:  2.0,
+      beamColor:   '#00ccff',
+      timeMode:    'auto',
+      forcedDayF:  1.0
+    };
+
+    function toggleWow() {
+      const details = document.getElementById('wow-details');
+      const arrow   = document.getElementById('wow-arrow');
+      const open = details.style.display === 'block';
+      details.style.display = open ? 'none' : 'block';
+      arrow.textContent = open ? '▼' : '▲';
+    }
+
+    function setTimeOfDay(mode) {
+      window.lightOverrides.timeMode = mode;
+      if (mode === 'day')   window.lightOverrides.forcedDayF = 1.0;
+      if (mode === 'night') window.lightOverrides.forcedDayF = 0.0;
+      // Update button styles
+      ['day','night','auto'].forEach(m => {
+        const btn = document.getElementById('btn-' + m);
+        btn.classList.toggle('active', m === mode);
+      });
+    }
+  </script>
+
+  <script type="module" src="./index.js"></script>
+
+</body>
+</html>
